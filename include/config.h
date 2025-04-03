@@ -1,19 +1,19 @@
 #pragma once
 
 // Pin Definitions
-#define LEFT_SENSOR_PIN  2    // Capteur gauche
-#define RIGHT_SENSOR_PIN 3    // Capteur droit
+#define LEFT_SENSOR_PIN  35    // Capteur gauche
+#define RIGHT_SENSOR_PIN 34    // Capteur droit
 #define LINE_SENSOR_PIN  4    // Capteur ligne d'arrivée
 
-#define MOTOR1_IN1  25   // Motor 1 control pin 1
-#define MOTOR1_IN2  26   // Motor 1 control pin 2
-#define MOTOR1_ENA  27   // Motor 1 enable pin (PWM)
+#define MOTOR1_IN1  26   // Motor 1 control pin 1
+#define MOTOR1_IN2  25   // Motor 1 control pin 2
+#define MOTOR1_ENA  14   // Motor 1 enable pin (PWM)
 
-#define MOTOR2_IN3  12   // Motor 2 control pin 1
-#define MOTOR2_IN4  13   // Motor 2 control pin 2
-#define MOTOR2_ENB  14   // Motor 2 enable pin (PWM)
+#define MOTOR2_IN3  26   // Motor 2 control pin 1
+#define MOTOR2_IN4  25   // Motor 2 control pin 2
+#define MOTOR2_ENB  13   // Motor 2 enable pin (PWM)
 
-#define SERVO_PIN   15   // Servo control pin
+#define SERVO_PIN   16   // Servo control pin
 
 // Bluetooth UUIDs
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"

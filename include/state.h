@@ -11,6 +11,7 @@ struct GlobalState {
     volatile int motor2Speed;
     volatile int servoAngle;
     volatile bool emergency;
+    volatile bool isForward;  // true for forward, false for backward
 };
 
 extern GlobalState globalState; 

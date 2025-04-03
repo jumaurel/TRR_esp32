@@ -8,6 +8,5 @@ public:
     static void update();
 private:
     static int16_t readDistance(uint8_t pin);
-    static int16_t fakeRandomRightDistance(uint8_t pin);
-    static int16_t fakeRandomLeftDistance(uint8_t pin);
+    static int16_t calculateAverage(int16_t* readings, uint8_t numReadings);
 };
