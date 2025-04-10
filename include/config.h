@@ -1,8 +1,8 @@
 #pragma once
 
 // Pin Definitions
-#define LEFT_SENSOR_PIN  35    // Capteur gauche
-#define RIGHT_SENSOR_PIN 34    // Capteur droit
+#define LEFT_SENSOR_PIN  19    // Capteur gauche
+#define RIGHT_SENSOR_PIN 18    // Capteur droit
 #define LINE_SENSOR_PIN  4    // Capteur ligne d'arrivée
 
 #define MOTOR1_IN1  26   // Motor 1 control pin 1
@@ -24,5 +24,5 @@
 #define MOTOR_PWM_FREQ     5000
 #define MOTOR_PWM_RES      8       // 8-bit resolution (0-255)
 #define PID_INTERVAL       100     // PID calculation interval in ms
-#define SENSOR_INTERVAL    100     // Sensor reading interval in ms
+#define SENSOR_INTERVAL    10     // Sensor reading interval in ms
 #define BLE_NOTIFY_INTERVAL 100    // BLE notification interval in ms 

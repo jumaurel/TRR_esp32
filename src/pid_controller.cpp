@@ -11,6 +11,8 @@ float PIDController::targetDistance = 500; // 500mm from wall
 float PIDController::lastError = 0;
 float PIDController::integral = 0;
 int PIDController::baseSpeed = 128; // Default 50% speed
+int PIDController::servoRange = 30; // Default servo range of ±30 degrees
+int PIDController::servoCenter = 90; // Default center position of servo
 
 void PIDController::setup() {
     reset();
@@ -38,6 +40,10 @@ void PIDController::setBaseSpeed(int value) {
     baseSpeed = constrain(value, 0, 255);  // Ensure value is between 0 and 255
 }
 
+void PIDController::setServoRange(int value) {
+    servoRange = constrain(value, 20, 52);  // Ensure value is between 0 and 90 degrees
+}
+
 void PIDController::update() {
     if (!globalState.isAutoMode || globalState.emergency) return;
     
@@ -50,9 +56,14 @@ void PIDController::update() {
     float derivative = (error - lastError) / (PID_INTERVAL / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
     
-    // Apply PID output to motors using the programmable baseSpeed
-    globalState.motor1Speed = constrain(baseSpeed + output, -255, 255);
-    globalState.motor2Speed = constrain(baseSpeed - output, -255, 255);
+    // Apply constant speed to both motors
+    globalState.motor1Speed = baseSpeed;
+    globalState.motor2Speed = baseSpeed;
+    
+    // Convert PID output to servo angle (0-180 degrees)
+    // Constrain the output to the servo range
+    int servoAngle = servoCenter + constrain(output, -servoRange, servoRange);
+    globalState.servoAngle = constrain(servoAngle, 0, 180);
     
     lastError = error;
 } 

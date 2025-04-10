@@ -77,7 +77,7 @@ void setup() {
     SensorManager::setup();  // Initialisation du gestionnaire de capteurs
     
     // Initialize global state
-    globalState.isAutoMode = false;
+    globalState.isAutoMode = true;
     globalState.emergency = false;
     globalState.motor1Speed = 0;
     globalState.motor2Speed = 0;
@@ -85,7 +85,7 @@ void setup() {
     globalState.isForward = true;  // Initialize to forward direction
     
     // Create tasks
-    xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0);
+    //xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0);
     xTaskCreatePinnedToCore(sensorTask, "Sensor", 2048, NULL, 2, &sensorTaskHandle, 0);  // Tâche capteurs sur Core 0 avec priorité 2
     xTaskCreatePinnedToCore(controlTask, "Control", 4096, NULL, 1, &controlTaskHandle, 1);
     xTaskCreatePinnedToCore(pidTask, "PID", 2048, NULL, 1, &pidTaskHandle, 1);

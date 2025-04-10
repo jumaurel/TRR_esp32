@@ -74,9 +74,9 @@ void MotorControl::update() {
         mcpwm_set_duty(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, duty2);
         mcpwm_set_duty_type(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, MCPWM_DUTY_MODE_0);
         
-        // Servo control - Convert +45/-45 to -90/+90
-        // Pour ESP32Servo, -90=gauche, 0=centre, +90=droite
-        steeringServo.write(globalState.servoAngle + 45); // On ajoute 90 car ESP32Servo utilise 0-180 au lieu de -90 à +90
+        // Servo control - Constrain values between 20 and 50 degrees
+        int constrainedAngle = constrain(globalState.servoAngle + 45, 20, 52);
+        steeringServo.write(constrainedAngle);
 
     } else {
         // Emergency stop
