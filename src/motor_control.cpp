@@ -75,8 +75,9 @@ void MotorControl::update() {
         mcpwm_set_duty_type(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, MCPWM_DUTY_MODE_0);
         
         // Servo control - Constrain values between 20 and 50 degrees
-        int constrainedAngle = constrain(globalState.servoAngle + 45, 20, 52);
-        steeringServo.write(constrainedAngle);
+        //int constrainedAngle = constrain(globalState.servoAngle + 45, 20, 52); //!FOR APP
+         
+        steeringServo.write(globalState.servoAngle);
 
     } else {
         // Emergency stop

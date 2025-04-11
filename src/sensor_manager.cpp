@@ -4,8 +4,16 @@
 #include <Arduino.h>
 
 // Static variables to store last valid distances and error counts
-static int16_t lastValidLeftDistance = 400;  // Default to middle range
-static int16_t lastValidRightDistance = 400; // Default to middle range
+static float lastValidLeftDistance = 0.0;
+static float lastValidRightDistance = 0.0;
+
+// EMA filter parameters
+static const float ALPHA = 0.3;  // Smoothing factor (0-1), lower = more smoothing
+static float filteredLeftDistance = 0.0;
+static float filteredRightDistance = 0.0;
+
+// Maximum allowed change between consecutive readings (in mm)
+static const float MAX_DISTANCE_CHANGE = 500.0;  // Increased to allow for faster movements
 
 void SensorManager::setup() {
     pinMode(LEFT_SENSOR_PIN, INPUT);
@@ -15,57 +23,56 @@ void SensorManager::setup() {
 
 void SensorManager::update() {
     // Read sensors with error handling
-    int16_t rawLeftDist = readDistance(LEFT_SENSOR_PIN, lastValidLeftDistance);
-    int16_t rawRightDist = readDistance(RIGHT_SENSOR_PIN, lastValidRightDistance);
+    float rawLeftDist = readDistance(LEFT_SENSOR_PIN, lastValidLeftDistance);
+    float rawRightDist = readDistance(RIGHT_SENSOR_PIN, lastValidRightDistance);
     
-    // Apply constraints
-    rawLeftDist = constrain(rawLeftDist, 50, 800);
-    rawRightDist = constrain(rawRightDist, 50, 800);
+    // Apply constraints (0 to 1000mm)
+    rawLeftDist = constrain(rawLeftDist, 0.0, 1000.0);
+    rawRightDist = constrain(rawRightDist, 0.0, 1000.0);
+    
+    // Check for unrealistic changes
+    if (abs(rawLeftDist - filteredLeftDistance) > MAX_DISTANCE_CHANGE) {
+        rawLeftDist = filteredLeftDistance;  // Reject the new reading if change is too large
+    }
+    if (abs(rawRightDist - filteredRightDistance) > MAX_DISTANCE_CHANGE) {
+        rawRightDist = filteredRightDistance;  // Reject the new reading if change is too large
+    }
+    
+    // Apply EMA filter
+    filteredLeftDistance = ALPHA * rawLeftDist + (1 - ALPHA) * filteredLeftDistance;
+    filteredRightDistance = ALPHA * rawRightDist + (1 - ALPHA) * filteredRightDistance;
     
     // Update last valid distances
-    lastValidLeftDistance = rawLeftDist;
-    lastValidRightDistance = rawRightDist;
+    lastValidLeftDistance = filteredLeftDistance;
+    lastValidRightDistance = filteredRightDistance;
     
     // Read line sensor
     bool line = digitalRead(LINE_SENSOR_PIN);
     
-    // Update global state
-    globalState.leftDistance = rawLeftDist;
-    globalState.rightDistance = rawRightDist;
+    // Update global state with filtered values
+    globalState.leftDistance = static_cast<int16_t>(filteredLeftDistance);
+    globalState.rightDistance = static_cast<int16_t>(filteredRightDistance);
     globalState.lineDetected = line;
 
     // Debug output
     /*Serial.print("Left: ");
-    Serial.print(rawLeftDist);
+    Serial.print(filteredLeftDistance);
     Serial.print(" - Right: ");
-    Serial.print(rawRightDist);*/
-
+    Serial.println(filteredRightDistance);*/
 }
 
-int16_t SensorManager::readDistance(uint8_t pin, int16_t& lastValidDist) {
-    // Try to read the sensor multiple times, if it fails, return the last valid distance
-    const uint8_t MAX_READ_ATTEMPTS = 3;
+float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
     const uint16_t MAX_PULSE_WIDTH = 1850;
     const uint16_t MIN_PULSE_WIDTH = 1000;
-    const int16_t MAX_DISTANCE_CHANGE = 100; // Maximum allowed change in mm between readings
     
-    for (uint8_t attempt = 0; attempt < MAX_READ_ATTEMPTS; attempt++) {
-        int16_t t = pulseIn(pin, HIGH);
+    int16_t t = pulseIn(pin, HIGH);
         
-        // Check if reading is valid
-        if (t > 0 && t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
-            // Convert pulse width to distance
-            int16_t d = (t - MIN_PULSE_WIDTH) * 2;
-            if (d >= 0) {
-                // Check if the new distance is not too far from the last valid one
-                if (abs(d - lastValidDist) <= MAX_DISTANCE_CHANGE) {
-                    return d;
-                }
-            }
-        }
-        
-        // Small delay between attempts
-        delay(1);
+    // Check if reading is valid
+    if (t > 0 && t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
+        // Convert pulse width to distance using manufacturer's formula
+        float d = (t - MIN_PULSE_WIDTH) * 2;
+        // Ensure distance is not negative
+        return d > 0 ? d : 0.0;           
     }
     
     // If we get here, all attempts failed
