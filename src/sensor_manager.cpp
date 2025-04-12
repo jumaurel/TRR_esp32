@@ -54,11 +54,6 @@ void SensorManager::update() {
     globalState.rightDistance = static_cast<int16_t>(filteredRightDistance);
     globalState.lineDetected = line;
 
-    // Debug output
-    /*Serial.print("Left: ");
-    Serial.print(filteredLeftDistance);
-    Serial.print(" - Right: ");
-    Serial.println(filteredRightDistance);*/
 }
 
 float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {

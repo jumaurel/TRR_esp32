@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Arduino.h>
+
 class PIDController {
 public:
     static void setup();
@@ -10,8 +12,7 @@ public:
     static void setKp(float value);
     static void setKi(float value);
     static void setKd(float value);
-    static void setBaseSpeed(int value);
-    static void setServoRange(int value);  // Range of servo movement in degrees
+    static void setAutoModeMotorSpeed(int value);
     
 private:
     static float Kp;
@@ -20,7 +21,6 @@ private:
     static float targetDistance;
     static float lastError;
     static float integral;
-    static int baseSpeed;
-    static int servoRange;  // Range of servo movement in degrees
+    static int autoModeMotorSpeed;
     static int servoCenter; // Center position of servo in degrees
 }; 

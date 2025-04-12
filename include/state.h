@@ -9,6 +9,7 @@ struct GlobalState {
     volatile bool isAutoMode;
     volatile int motor1Speed;
     volatile int motor2Speed;
+    volatile int autoModeMotorSpeed;
     volatile int servoAngle;
     volatile bool emergency;
     volatile bool isForward;  // true for forward, false for backward

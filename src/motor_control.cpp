@@ -44,11 +44,9 @@ void MotorControl::setupPWM() {
     steeringServo.setPeriodHertz(50); // 50 Hz standard pour les servos
     steeringServo.attach(SERVO_PIN, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
     
-    // Position initiale du servo à 0 degrés (centre)
-    steeringServo.write(0);
+    // Position initiale du servo à 35 degrés (centre)
+    steeringServo.write(globalState.servoAngle);
 
-    // STOP MOTORS
-    globalState.emergency = true;
 }
 
 void MotorControl::update() {
@@ -74,11 +72,8 @@ void MotorControl::update() {
         mcpwm_set_duty(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, duty2);
         mcpwm_set_duty_type(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, MCPWM_DUTY_MODE_0);
         
-        // Servo control - Constrain values between 20 and 50 degrees
-        //int constrainedAngle = constrain(globalState.servoAngle + 45, 20, 52); //!FOR APP
-         
-        steeringServo.write(globalState.servoAngle);
-
+        steeringServo.write(constrain(globalState.servoAngle, 20, 52));
+       
     } else {
         // Emergency stop
         digitalWrite(MOTOR1_IN1, LOW);

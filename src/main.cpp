@@ -9,6 +9,7 @@
 #include "motor_control.h"
 #include "pid_controller.h"
 #include "main.h"
+#include "esp_task_wdt.h"
 
 SemaphoreHandle_t globalMutex;
 
@@ -37,13 +38,14 @@ void sensorTask(void* parameter) {
         if (xSemaphoreTake(globalMutex, portMAX_DELAY)) {
             SensorManager::update();
             xSemaphoreGive(globalMutex);
-        }
+        } 
+        
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(SENSOR_INTERVAL));
     }
 }
 
 void controlTask(void* parameter) {
-    while (true) {
+    while (true) {       
         if (xSemaphoreTake(globalMutex, portMAX_DELAY)) {
             MotorControl::update();
             xSemaphoreGive(globalMutex);
@@ -55,11 +57,13 @@ void controlTask(void* parameter) {
 void pidTask(void* parameter) {
     TickType_t xLastWakeTime = xTaskGetTickCount();
     
-    while (true) {
+    while (true) {     
         if (xSemaphoreTake(globalMutex, portMAX_DELAY)) {
             PIDController::update();
             xSemaphoreGive(globalMutex);
         }
+        
+        // Ensure we yield to other tasks
         vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(PID_INTERVAL));
     }
 }
@@ -69,28 +73,28 @@ void setup() {
     
     // Initialize mutex
     globalMutex = xSemaphoreCreateMutex();
+
+        // Initialize global state
+    globalState.isAutoMode = false;
+    globalState.emergency = true;
+    globalState.motor1Speed = 0;
+    globalState.motor2Speed = 0;
+    globalState.servoAngle = 35;
+    globalState.isForward = true;  // Initialize to forward direction
     
     // Initialize components
     BLEManager::setup();
     MotorControl::setup();
     PIDController::setup();
-    SensorManager::setup();  // Initialisation du gestionnaire de capteurs
-    
-    // Initialize global state
-    globalState.isAutoMode = true;
-    globalState.emergency = false;
-    globalState.motor1Speed = 0;
-    globalState.motor2Speed = 0;
-    globalState.servoAngle = 0;
-    globalState.isForward = true;  // Initialize to forward direction
-    
+    SensorManager::setup();
+
     // Create tasks
-    //xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0);
+    //xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0); // Tâche émission BLE sur Core 0 avec priorité 1
     xTaskCreatePinnedToCore(sensorTask, "Sensor", 2048, NULL, 2, &sensorTaskHandle, 0);  // Tâche capteurs sur Core 0 avec priorité 2
-    xTaskCreatePinnedToCore(controlTask, "Control", 4096, NULL, 1, &controlTaskHandle, 1);
-    xTaskCreatePinnedToCore(pidTask, "PID", 2048, NULL, 1, &pidTaskHandle, 1);
+    xTaskCreatePinnedToCore(controlTask, "Control", 4096, NULL, 1, &controlTaskHandle, 1); // Tâche contrôle moteurs sur Core 1 avec priorité 1
+    xTaskCreatePinnedToCore(pidTask, "PID", 2048, NULL, 1, &pidTaskHandle, 1); // Tâche PID sur Core 1 avec priorité 1
     
-    Serial.println("Setup complete - All tasks created : it's up to them now !");
+    Serial.println("Setup complete - All tasks created");
 }
 
 void loop() {

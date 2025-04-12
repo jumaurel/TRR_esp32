@@ -126,7 +126,11 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
     char commandType = (char)data[0];
     
     switch (commandType) {
-      case 'M': // Motor control
+      case 'M': // Motor control - Only allowed in auto mode
+        if (globalState.isAutoMode) {
+          Serial.println("Motor commands not allowed in auto mode");
+          break;
+        }
         if (data[1] == '1') { // Motor 1
           // Parse the value after M1
           int value = 0;
@@ -152,7 +156,11 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
         }
         break;
         
-      case 'D': // Direction
+      case 'D': // Direction - Only allowed in auto mode
+        if (globalState.isAutoMode) {
+          Serial.println("Direction commands not allowed in auto mode");
+          break;
+        }
         {
           // Parse the signed integer value after D
           int value = 0;
@@ -174,7 +182,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
             value = -value;
           }
           
-          globalState.servoAngle = value; // Value is already in range -45 to 45
+          globalState.servoAngle = map(value, -30, 30, 52, 20); // Value is already in range -30 to 30
           Serial.print("Direction set to: ");
           Serial.println(value);
         }
@@ -187,18 +195,21 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           PIDController::reset();
           Serial.println("Mode Auto enabled");
         } else {
+          // Reset motor speeds when switching to manual mode
+          globalState.motor1Speed = 0;
+          globalState.motor2Speed = 0;
           Serial.println("Mode Manuel enabled");
         }
         break;
         
-      case 'G': //  Go
+      case 'G': // Go
         if (data[1] == '1') {
           globalState.emergency = false;
           Serial.println("Go - Motors enabled");
         }
         break;
         
-      case 'E': //  Stop
+      case 'E': // Stop
         if (data[1] == '1') {
           globalState.emergency = true;
           globalState.motor1Speed = 0;
@@ -207,13 +218,46 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
         }
         break;
         
-      case 'F': // Forward/Backward direction
-        if (data[1] == '1') {
+      case 'B': // Forward/Backward direction - Only allowed in auto mode
+        if (globalState.isAutoMode) {
+          Serial.println("Direction commands not allowed in auto mode");
+          break;
+        }
+        if (data[1] == '0') {
           globalState.isForward = true;
           Serial.println("Direction set to Forward");
-        } else if (data[1] == '0') {
+        } else if (data[1] == '1') {
           globalState.isForward = false;
           Serial.println("Direction set to Backward");
+        }
+        break;
+        
+      case 'T': // Power percentage in auto mode (0-100)
+        if (!globalState.isAutoMode) {
+          Serial.println("Power commands not allowed in manual mode");
+          break;
+        }
+        {
+          // Parse integer value (0-100)
+          int value = 0;
+          for (size_t i = 1; i < length; i++) {
+            if (isdigit(data[i])) {
+              value = value * 10 + (data[i] - '0');
+            }
+          }
+          
+          // Constrain value between 0 and 100
+          value = constrain(value, 0, 100);
+          
+          // Convert percentage to motor speed (0-255)
+          int motorSpeed = map(value, 0, 100, 0, 255);
+          
+          // Set auto mode motor speed in PID controller
+          PIDController::setAutoModeMotorSpeed(motorSpeed);
+          Serial.print("Power percentage: ");
+          Serial.print(value);
+          Serial.print("%, Auto mode motor speed: ");
+          Serial.println(motorSpeed);
         }
         break;
         
@@ -297,22 +341,6 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           value += decimal;
           PIDController::setKd(value);
           Serial.print("Kd set to: ");
-          Serial.println(value);
-        }
-        break;
-        
-      case 'B': // Base speed
-        {
-          // Parse integer value
-          int value = 0;
-          for (size_t i = 1; i < length; i++) {
-            if (isdigit(data[i])) {
-              value = value * 10 + (data[i] - '0');
-            }
-          }
-          
-          PIDController::setBaseSpeed(value);
-          Serial.print("Base speed set to: ");
           Serial.println(value);
         }
         break;
