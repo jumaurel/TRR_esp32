@@ -1,8 +1,8 @@
 #pragma once
 
 // Pin Definitions
-#define LEFT_SENSOR_PIN  19    // Capteur gauche
-#define RIGHT_SENSOR_PIN 18    // Capteur droit
+#define LEFT_SENSOR_PIN  18    // Capteur gauche
+#define RIGHT_SENSOR_PIN 19    // Capteur droit
 #define LINE_SENSOR_PIN  4    // Capteur ligne d'arrivée
 
 #define MOTOR1_IN1  26   // Motor 1 control pin 1

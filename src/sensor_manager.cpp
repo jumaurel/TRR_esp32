@@ -29,29 +29,30 @@ void SensorManager::update() {
     // Apply constraints (0 to 1000mm)
     rawLeftDist = constrain(rawLeftDist, 0.0, 1000.0);
     rawRightDist = constrain(rawRightDist, 0.0, 1000.0);
-    
-    // Check for unrealistic changes
-    if (abs(rawLeftDist - filteredLeftDistance) > MAX_DISTANCE_CHANGE) {
-        rawLeftDist = filteredLeftDistance;  // Reject the new reading if change is too large
-    }
-    if (abs(rawRightDist - filteredRightDistance) > MAX_DISTANCE_CHANGE) {
-        rawRightDist = filteredRightDistance;  // Reject the new reading if change is too large
-    }
-    
-    // Apply EMA filter
-    filteredLeftDistance = ALPHA * rawLeftDist + (1 - ALPHA) * filteredLeftDistance;
-    filteredRightDistance = ALPHA * rawRightDist + (1 - ALPHA) * filteredRightDistance;
+
     
     // Update last valid distances
-    lastValidLeftDistance = filteredLeftDistance;
-    lastValidRightDistance = filteredRightDistance;
+    lastValidLeftDistance = rawLeftDist;
+    lastValidRightDistance = rawRightDist;
     
     // Read line sensor
     bool line = digitalRead(LINE_SENSOR_PIN);
     
     // Update global state with filtered values
-    globalState.leftDistance = static_cast<int16_t>(filteredLeftDistance);
-    globalState.rightDistance = static_cast<int16_t>(filteredRightDistance);
+    
+    if(abs(rawLeftDist - lastValidLeftDistance) > 200){
+        rawLeftDist = lastValidLeftDistance;
+    }
+    
+    if(abs(rawRightDist - lastValidRightDistance) > 200){
+        rawRightDist = lastValidRightDistance;
+    }
+    globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
+    globalState.rightDistance = static_cast<int16_t>(rawRightDist);
+    Serial.print(globalState.leftDistance);
+    Serial.print(" - ");
+    Serial.println(globalState.rightDistance);
+
     globalState.lineDetected = line;
 
 }

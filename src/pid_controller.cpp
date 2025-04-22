@@ -53,7 +53,7 @@ void PIDController::update() {
     float derivative = (error - lastError) / (PID_INTERVAL / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
     
-    Serial.print(error);
+    //Serial.println(error);
     /*Serial.print(output);
     Serial.print(" - ");
     Serial.println(constrain(servoCenter + output, 20, 52));
