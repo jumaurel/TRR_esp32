@@ -29,11 +29,6 @@ void SensorManager::update() {
     // Apply constraints (0 to 1000mm)
     rawLeftDist = constrain(rawLeftDist, 0.0, 1000.0);
     rawRightDist = constrain(rawRightDist, 0.0, 1000.0);
-
-    
-    // Update last valid distances
-    lastValidLeftDistance = rawLeftDist;
-    lastValidRightDistance = rawRightDist;
     
     // Read line sensor
     bool line = digitalRead(LINE_SENSOR_PIN);
@@ -47,10 +42,16 @@ void SensorManager::update() {
     if(abs(rawRightDist - lastValidRightDistance) > 200){
         rawRightDist = lastValidRightDistance;
     }
+
+     // Update last valid distances
+    lastValidLeftDistance = rawLeftDist;
+    lastValidRightDistance = rawRightDist;
+
+
     globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
     globalState.rightDistance = static_cast<int16_t>(rawRightDist);
-    Serial.print(globalState.leftDistance);
-    Serial.print(" - ");
+    //Serial.println(globalState.leftDistance);
+    //Serial.print(" - ");
     Serial.println(globalState.rightDistance);
 
     globalState.lineDetected = line;
