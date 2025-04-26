@@ -23,6 +23,6 @@
 // Constants
 #define MOTOR_PWM_FREQ     5000
 #define MOTOR_PWM_RES      8       // 8-bit resolution (0-255)
-#define PID_INTERVAL       100     // PID calculation interval in ms
+#define PID_INTERVAL       10     // PID calculation interval in ms
 #define SENSOR_INTERVAL    10     // Sensor reading interval in ms
 #define BLE_NOTIFY_INTERVAL 100    // BLE notification interval in ms 

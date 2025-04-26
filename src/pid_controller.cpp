@@ -59,6 +59,7 @@ void PIDController::update() {
     Serial.println(constrain(servoCenter + output, 20, 52));
     */
     // Apply base speed to both motors
+    
     globalState.motor1Speed = autoModeMotorSpeed;
     globalState.motor2Speed = autoModeMotorSpeed;
     

@@ -35,13 +35,13 @@ void SensorManager::update() {
     
     // Update global state with filtered values
     
-    if(abs(rawLeftDist - lastValidLeftDistance) > 200){
+    /*if(abs(rawLeftDist - lastValidLeftDistance) > 200){
         rawLeftDist = lastValidLeftDistance;
     }
     
     if(abs(rawRightDist - lastValidRightDistance) > 200){
         rawRightDist = lastValidRightDistance;
-    }
+    }*/
 
      // Update last valid distances
     lastValidLeftDistance = rawLeftDist;
@@ -50,9 +50,9 @@ void SensorManager::update() {
 
     globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
     globalState.rightDistance = static_cast<int16_t>(rawRightDist);
-    //Serial.println(globalState.leftDistance);
-    //Serial.print(" - ");
-    Serial.println(globalState.rightDistance);
+    /*Serial.print(globalState.leftDistance);
+    Serial.print(" - ");
+    Serial.println(globalState.rightDistance);*/
 
     globalState.lineDetected = line;
 
@@ -65,13 +65,17 @@ float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
     int16_t t = pulseIn(pin, HIGH);
         
     // Check if reading is valid
-    if (t > 0 && t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
+    if (t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
         // Convert pulse width to distance using manufacturer's formula
         float d = (t - MIN_PULSE_WIDTH) * 2;
         // Ensure distance is not negative
         return d > 0 ? d : 0.0;           
     }
-    
-    // If we get here, all attempts failed
-    return lastValidDist;  // Return last valid distance
+    else if(t > MAX_PULSE_WIDTH){
+        return 1000;
+    }
+    else{
+        return lastValidDist;
+    }
+  
 }
