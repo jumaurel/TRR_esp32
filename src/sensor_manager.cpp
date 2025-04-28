@@ -1,6 +1,7 @@
 #include "sensor_manager.h"
 #include "config.h"
-#include "state.h"
+#include "motor_control.h"
+#include "sensor_manager.h"
 #include <Arduino.h>
 
 // Static variables to store last valid distances and error counts
@@ -14,6 +15,8 @@ static float filteredRightDistance = 0.0;
 
 // Maximum allowed change between consecutive readings (in mm)
 static const float MAX_DISTANCE_CHANGE = 500.0;  // Increased to allow for faster movements
+
+extern SensorData sensorData;
 
 SensorManager::SensorManager() {
     pinMode(LEFT_SENSOR_PIN, INPUT);
@@ -48,30 +51,30 @@ void SensorManager::update() {
     lastValidRightDistance = rawRightDist;
 
 
-    globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
-    globalState.rightDistance = static_cast<int16_t>(rawRightDist);
+    sensorData.leftDistance = static_cast<int16_t>(rawLeftDist);
+    sensorData.rightDistance = static_cast<int16_t>(rawRightDist);
     /*Serial.print(globalState.leftDistance);
     Serial.print(" - ");
     Serial.println(globalState.rightDistance);*/
 
-    globalState.lineDetected = line;
+    sensorData.lineDetected = line;
 
 }
 
 float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
-    const uint16_t MAX_PULSE_WIDTH = 1850;
-    const uint16_t MIN_PULSE_WIDTH = 1000;
+    const uint16_t MAX_PW = 1850;
+    const uint16_t MIN_PW = 1000;
 
     int16_t t = pulseIn(pin, HIGH);
 
     // Check if reading is valid
-    if (t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
+    if (MIN_PW <= t && t <= MAX_PW) {
         // Convert pulse width to distance using manufacturer's formula
-        float d = (t - MIN_PULSE_WIDTH) * 2;
+        float d = (t - MIN_PW) * 2;
         // Ensure distance is not negative
         return d > 0 ? d : 0.0;
     }
-    else if(t > MAX_PULSE_WIDTH){
+    else if(t > MAX_PW){
         return 1000;
     }
     else{

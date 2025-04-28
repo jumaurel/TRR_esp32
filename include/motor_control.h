@@ -4,6 +4,14 @@
 #include <ESP32Servo.h>
 #include "driver/mcpwm.h"
 
+struct MotorData {
+    int motor1Speed;
+    int motor2Speed;
+    int servoAngle;
+    bool isForward;  // true for forward, false for backward
+    bool emergency;
+};
+
 class MotorControl {
 public:
     // Constructor replaces setup

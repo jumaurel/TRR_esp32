@@ -1,7 +1,8 @@
 #include "motor_control.h"
 #include "config.h"
-#include "state.h"
 #include <Arduino.h>
+
+extern MotorData motorData;
 
 
 MotorControl::MotorControl() {
@@ -42,24 +43,24 @@ void MotorControl::setupPWM() {
     steeringServo.attach(SERVO_PIN, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
 
     // Position initiale du servo à 35 degrés (centre)
-    steeringServo.write(globalState.servoAngle);
+    steeringServo.write(motorData.servoAngle);
 }
 
 void MotorControl::update() {
-    if (!globalState.emergency) {
+    if (!motorData.emergency) {
         // Contrôle des directions des moteurs via les pins IN1/IN2 et IN3/IN4
         // Motor 1 control
-        digitalWrite(MOTOR1_IN1, (globalState.motor1Speed >= 0) == globalState.isForward ? HIGH : LOW);
-        digitalWrite(MOTOR1_IN2, (globalState.motor1Speed >= 0) == globalState.isForward ? LOW : HIGH);
+        digitalWrite(MOTOR1_IN1, (motorData.motor1Speed >= 0) == motorData.isForward ? HIGH : LOW);
+        digitalWrite(MOTOR1_IN2, (motorData.motor1Speed >= 0) == motorData.isForward ? LOW : HIGH);
 
         // Motor 2 control
-        digitalWrite(MOTOR2_IN3, (globalState.motor2Speed >= 0) == globalState.isForward ? HIGH : LOW);
-        digitalWrite(MOTOR2_IN4, (globalState.motor2Speed >= 0) == globalState.isForward ? LOW : HIGH);
+        digitalWrite(MOTOR2_IN3, (motorData.motor2Speed >= 0) == motorData.isForward ? HIGH : LOW);
+        digitalWrite(MOTOR2_IN4, (motorData.motor2Speed >= 0) == motorData.isForward ? LOW : HIGH);
 
         // Contrôle PWM des moteurs avec MCPWM
         // Conversion de 0-255 à 0-100%
-        float duty1 = abs(globalState.motor1Speed) / 255.0 * 100.0;
-        float duty2 = abs(globalState.motor2Speed) / 255.0 * 100.0;
+        float duty1 = abs(motorData.motor1Speed) / 255.0 * 100.0;
+        float duty2 = abs(motorData.motor2Speed) / 255.0 * 100.0;
 
         // Application du PWM aux moteurs
         mcpwm_set_duty(MCPWM_UNIT, MOTOR1_TIMER, MCPWM_GEN_A, duty1);
@@ -68,7 +69,7 @@ void MotorControl::update() {
         mcpwm_set_duty(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, duty2);
         mcpwm_set_duty_type(MCPWM_UNIT, MOTOR2_TIMER, MCPWM_GEN_A, MCPWM_DUTY_MODE_0);
 
-        steeringServo.write(constrain(globalState.servoAngle, 20, 52));
+        steeringServo.write(constrain(motorData.servoAngle, 20, 52));
 
     } else {
         // Emergency stop

@@ -1,7 +1,8 @@
 #include "ble_manager.h"
 #include "pid_controller.h"
+#include "sensor_manager.h"
+#include "motor_control.h"
 #include "config.h"
-#include "state.h"
 #include "main.h"
 #include <Arduino.h>
 
@@ -12,6 +13,9 @@ BLECharacteristic* BLEManager::pSensorCharacteristic = nullptr;
 bool BLEManager::deviceConnected = false;
 
 extern PIDController pidController;
+extern SensorData sensorData;
+extern MotorData motorData;
+
 
 // Server callbacks implementation
 class BLEManager::ServerCallbacks: public BLEServerCallbacks {
@@ -110,15 +114,15 @@ void BLEManager::setup() {
 void BLEManager::sendSensorData() {
     if (!deviceConnected) return;
 
-    uint8_t sensorData[6];
-    sensorData[0] = 'D';
-    sensorData[1] = globalState.leftDistance & 0xFF;
-    sensorData[2] = (globalState.leftDistance >> 8) & 0xFF;
-    sensorData[3] = globalState.rightDistance & 0xFF;
-    sensorData[4] = (globalState.rightDistance >> 8) & 0xFF;
-    sensorData[5] = globalState.lineDetected ? 1 : 0;
+    uint8_t binaryData[6];
+    binaryData[0] = 'D';
+    binaryData[1] = sensorData.leftDistance & 0xFF;
+    binaryData[2] = (sensorData.leftDistance >> 8) & 0xFF;
+    binaryData[3] = sensorData.rightDistance & 0xFF;
+    binaryData[4] = (sensorData.rightDistance >> 8) & 0xFF;
+    binaryData[5] = sensorData.lineDetected ? 1 : 0;
 
-    pSensorCharacteristic->setValue(sensorData, 6);
+    pSensorCharacteristic->setValue(binaryData, 6);
     pSensorCharacteristic->notify();
 }
 
@@ -129,7 +133,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
 
     switch (commandType) {
       case 'M': // Motor control - Only allowed in auto mode
-        if (globalState.isAutoMode) {
+        if (sensorData.isAutoMode) {
           Serial.println("Motor commands not allowed in auto mode");
           break;
         }
@@ -141,7 +145,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
               value = value * 10 + (data[i] - '0');
             }
           }
-          globalState.motor1Speed = value;
+          motorData.motor1Speed = value;
           Serial.print("Motor 1 speed set to: ");
           Serial.println(value);
         } else if (data[1] == '2') { // Motor 2
@@ -152,14 +156,14 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
               value = value * 10 + (data[i] - '0');
             }
           }
-          globalState.motor2Speed = value;
+          motorData.motor2Speed = value;
           Serial.print("Motor 2 speed set to: ");
           Serial.println(value);
         }
         break;
 
       case 'D': // Direction - Only allowed in auto mode
-        if (globalState.isAutoMode) {
+        if (sensorData.isAutoMode) {
           Serial.println("Direction commands not allowed in auto mode");
           break;
         }
@@ -184,58 +188,58 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
             value = -value;
           }
 
-          globalState.servoAngle = map(value, -30, 30, 52, 20); // Value is already in range -30 to 30
+          motorData.servoAngle = map(value, -30, 30, 52, 20); // Value is already in range -30 to 30
           Serial.print("Direction set to: ");
           Serial.println(value);
         }
         break;
 
       case 'A': // Auto mode
-        globalState.isAutoMode = (data[1] == '1');
-        if (globalState.isAutoMode) {
+        sensorData.isAutoMode = (data[1] == '1');
+        if (sensorData.isAutoMode) {
           // Reset PID variables
           pidController.reset();
           Serial.println("Mode Auto enabled");
         } else {
           // Reset motor speeds when switching to manual mode
-          globalState.motor1Speed = 0;
-          globalState.motor2Speed = 0;
+          motorData.motor1Speed = 0;
+          motorData.motor2Speed = 0;
           Serial.println("Mode Manuel enabled");
         }
         break;
 
       case 'G': // Go
         if (data[1] == '1') {
-          globalState.emergency = false;
+          motorData.emergency = false;
           Serial.println("Go - Motors enabled");
         }
         break;
 
       case 'E': // Stop
         if (data[1] == '1') {
-          globalState.emergency = true;
-          globalState.motor1Speed = 0;
-          globalState.motor2Speed = 0;
+          motorData.emergency = true;
+          motorData.motor1Speed = 0;
+          motorData.motor2Speed = 0;
           Serial.println("Stop - Motors disabled");
         }
         break;
 
       case 'B': // Forward/Backward direction - Only allowed in auto mode
-        if (globalState.isAutoMode) {
+        if (sensorData.isAutoMode) {
           Serial.println("Direction commands not allowed in auto mode");
           break;
         }
         if (data[1] == '0') {
-          globalState.isForward = true;
+          motorData.isForward = true;
           Serial.println("Direction set to Forward");
         } else if (data[1] == '1') {
-          globalState.isForward = false;
+          motorData.isForward = false;
           Serial.println("Direction set to Backward");
         }
         break;
 
       case 'T': // Power percentage in auto mode (0-100)
-        if (!globalState.isAutoMode) {
+        if (!sensorData.isAutoMode) {
           Serial.println("Power commands not allowed in manual mode");
           break;
         }

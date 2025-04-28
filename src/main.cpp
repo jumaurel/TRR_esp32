@@ -3,7 +3,6 @@
 #include "freertos/queue.h"
 #include "freertos/semphr.h"
 #include "config.h"
-#include "state.h"
 #include "ble_manager.h"
 #include "sensor_manager.h"
 #include "motor_control.h"
@@ -19,6 +18,10 @@ SensorManager sensorManager;
 MotorControl motorControl;
 PIDController pidController;
 
+// Global data structures
+SensorData sensorData;
+MotorData motorData;
+
 // Tasks
 void bleTask(void* parameter) {
     TickType_t xLastWakeTime = xTaskGetTickCount();
@@ -33,13 +36,19 @@ void bleTask(void* parameter) {
 void setup() {
     Serial.begin(115200);
 
-    // Initialize global state
-    globalState.isAutoMode = false;
-    globalState.emergency = true;
-    globalState.motor1Speed = 0;
-    globalState.motor2Speed = 0;
-    globalState.servoAngle = 35;
-    globalState.isForward = true;  // Initialize to forward direction
+    // Initialize sensor data
+    sensorData.isAutoMode = false;
+    sensorData.leftDistance = 0;
+    sensorData.rightDistance = 0;
+    sensorData.lineDetected = false;
+    sensorData.autoModeMotorSpeed = 0;
+
+    // Initialize motor data
+    motorData.emergency = true;
+    motorData.motor1Speed = 0;
+    motorData.motor2Speed = 0;
+    motorData.servoAngle = 35;
+    motorData.isForward = true;  // Initialize to forward direction
 
     // Create tasks
     xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0); // Tâche émission BLE sur Core 0 avec priorité 1

@@ -3,6 +3,15 @@
 #include <Arduino.h>
 #include "config.h"
 
+// Struct to hold sensor-related data
+struct SensorData {
+    int16_t leftDistance;
+    int16_t rightDistance;
+    bool lineDetected;
+    bool isAutoMode;
+    int autoModeMotorSpeed;
+};
+
 class SensorManager {
 public:
     // Constructor replaces setup

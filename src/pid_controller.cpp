@@ -1,11 +1,12 @@
 #include "pid_controller.h"
 #include "config.h"
-#include "state.h"
+#include "sensor_manager.h"
+#include "motor_control.h"
 #include <Arduino.h>
 
-// Static member initialization
+extern SensorData sensorData;
+extern MotorData motorData;
 
-// Constructor implementation
 PIDController::PIDController() : Kp(0.1), Ki(0.0), Kd(0.08), integral(0), lastError(0), autoModeMotorSpeed(0) {
     // Initialization logic for PID constants and instance variables
 }
@@ -66,13 +67,13 @@ void PIDController::setAutoModeMotorSpeed(int value) {
 }
 
 void PIDController::update() {
-    if (!globalState.isAutoMode) {
+    if (!sensorData.isAutoMode) {
         delay(10);
         return;
     }
 
     // Calculate error (average of left and right distances)
-    float error = globalState.leftDistance - globalState.rightDistance;
+    float error = sensorData.leftDistance - sensorData.rightDistance;
 
     // PID calculation
     integral += error * (PILOT_INTERVAL / 1000.0);
@@ -80,12 +81,12 @@ void PIDController::update() {
     float output = Kp * error + Ki * integral + Kd * derivative;
 
     // Apply base speed to both motors
-    globalState.motor1Speed = autoModeMotorSpeed;
-    globalState.motor2Speed = autoModeMotorSpeed;
+    motorData.motor1Speed = autoModeMotorSpeed;
+    motorData.motor2Speed = autoModeMotorSpeed;
 
     // Convert PID output to servo angle (0-180 degrees)
     int servoAngle = constrain(servoCenter + output, 20, 52);
-    globalState.servoAngle = servoAngle;
+    motorData.servoAngle = servoAngle;
 
     lastError = error;
 }
