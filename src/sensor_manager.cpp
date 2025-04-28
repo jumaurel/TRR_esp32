@@ -16,15 +16,13 @@ static float filteredRightDistance = 0.0;
 // Maximum allowed change between consecutive readings (in mm)
 static const float MAX_DISTANCE_CHANGE = 500.0;  // Increased to allow for faster movements
 
-extern SensorData sensorData;
-
 SensorManager::SensorManager() {
     pinMode(LEFT_SENSOR_PIN, INPUT);
     pinMode(RIGHT_SENSOR_PIN, INPUT);
     pinMode(LINE_SENSOR_PIN, INPUT);
 }
 
-void SensorManager::update() {
+void SensorManager::update(SensorData &sensorData) {
     // Read sensors with error handling
     float rawLeftDist = readDistance(LEFT_SENSOR_PIN, lastValidLeftDistance);
     float rawRightDist = readDistance(RIGHT_SENSOR_PIN, lastValidRightDistance);

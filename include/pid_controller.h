@@ -2,6 +2,8 @@
 
 #include <Arduino.h>
 #include "config.h"
+#include "sensor_manager.h"
+#include "motor_control.h"
 
 struct PIDData {
     float P;
@@ -20,5 +22,5 @@ public:
     PIDController();
 
     void reset(PIDData &pidData);
-    void update(PIDData &pidData);
+    void update(SensorData &sensorData, PIDData &pidData, MotorData &motorData);
 };

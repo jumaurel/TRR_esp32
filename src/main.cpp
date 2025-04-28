@@ -18,7 +18,7 @@ SensorManager sensorManager;
 MotorControl motorControl;
 PIDController pidController;
 
-// Global data structures
+// Loop data structures
 SensorData sensorData;
 MotorData motorData;
 PIDData pidData;
@@ -58,8 +58,8 @@ void setup() {
 }
 
 void loop() {
-    sensorManager.update();
-    pidController.update(pidData);
-    motorControl.update();
+    sensorManager.update(sensorData);
+    pidController.update(sensorData, pidData, motorData);
+    motorControl.update(motorData);
     delay(PILOT_INTERVAL);
 }

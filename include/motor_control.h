@@ -4,6 +4,8 @@
 #include <ESP32Servo.h>
 #include "driver/mcpwm.h"
 
+#define SERVO_CENTER 35
+
 struct MotorData {
     int motor1Speed;
     int motor2Speed;
@@ -17,7 +19,7 @@ public:
     // Constructor replaces setup
     MotorControl();
 
-    void update();
+    void update(MotorData &motorDdata);
 
 private:
     // Constants for servo control

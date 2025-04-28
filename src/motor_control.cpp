@@ -2,9 +2,6 @@
 #include "config.h"
 #include <Arduino.h>
 
-extern MotorData motorData;
-
-
 MotorControl::MotorControl() {
     // Initialize pins
     pinMode(MOTOR1_IN1, OUTPUT);
@@ -43,10 +40,10 @@ void MotorControl::setupPWM() {
     steeringServo.attach(SERVO_PIN, SERVO_MIN_PULSE, SERVO_MAX_PULSE);
 
     // Position initiale du servo à 35 degrés (centre)
-    steeringServo.write(motorData.servoAngle);
+    steeringServo.write(SERVO_CENTER);
 }
 
-void MotorControl::update() {
+void MotorControl::update(MotorData &motorData) {
     if (!motorData.emergency) {
         // Contrôle des directions des moteurs via les pins IN1/IN2 et IN3/IN4
         // Motor 1 control

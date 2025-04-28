@@ -4,11 +4,6 @@
 #include "motor_control.h"
 #include <Arduino.h>
 
-extern SensorData sensorData;
-extern MotorData motorData;
-
-const int SERVO_CENTER = 35;
-
 PIDController::PIDController() {
 }
 
@@ -17,7 +12,7 @@ void PIDController::reset(PIDData &pidData) {
     pidData.integral = 0;
 }
 
-void PIDController::update(PIDData &pidData) {
+void PIDController::update(SensorData &sensorData, PIDData &pidData, MotorData &motorData) {
     if (!sensorData.isAutoMode) {
         delay(10);
         return;

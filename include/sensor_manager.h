@@ -17,7 +17,7 @@ public:
     // Constructor replaces setup
     SensorManager();
 
-    void update();
+    void update(SensorData &sensorData);
     float readDistance(uint8_t pin, float& lastValidDist);
 
 private:
