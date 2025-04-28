@@ -11,6 +11,8 @@ BLECharacteristic* BLEManager::pControlCharacteristic = nullptr;
 BLECharacteristic* BLEManager::pSensorCharacteristic = nullptr;
 bool BLEManager::deviceConnected = false;
 
+extern PIDController pidController;
+
 // Server callbacks implementation
 class BLEManager::ServerCallbacks: public BLEServerCallbacks {
     void onConnect(BLEServer* pServer) override {
@@ -192,7 +194,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
         globalState.isAutoMode = (data[1] == '1');
         if (globalState.isAutoMode) {
           // Reset PID variables
-          PIDController::reset();
+          pidController.reset();
           Serial.println("Mode Auto enabled");
         } else {
           // Reset motor speeds when switching to manual mode
@@ -253,7 +255,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           int motorSpeed = map(value, 0, 100, 0, 255);
 
           // Set auto mode motor speed in PID controller
-          PIDController::setAutoModeMotorSpeed(motorSpeed);
+          pidController.setAutoModeMotorSpeed(motorSpeed);
           Serial.print("Power percentage: ");
           Serial.print(value);
           Serial.print("%, Auto mode motor speed: ");
@@ -283,7 +285,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          PIDController::setKp(value);
+          pidController.setKp(value);
           Serial.print("Kp set to: ");
           Serial.println(value);
         }
@@ -311,7 +313,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          PIDController::setKi(value);
+          pidController.setKi(value);
           Serial.print("Ki set to: ");
           Serial.println(value);
         }
@@ -339,7 +341,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          PIDController::setKd(value);
+          pidController.setKd(value);
           Serial.print("Kd set to: ");
           Serial.println(value);
         }

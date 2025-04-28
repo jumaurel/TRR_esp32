@@ -14,6 +14,11 @@
 // Task handles
 TaskHandle_t bleTaskHandle;
 
+// Global instances
+SensorManager sensorManager;
+MotorControl motorControl;
+PIDController pidController;
+
 // Tasks
 void bleTask(void* parameter) {
     TickType_t xLastWakeTime = xTaskGetTickCount();
@@ -36,21 +41,15 @@ void setup() {
     globalState.servoAngle = 35;
     globalState.isForward = true;  // Initialize to forward direction
 
-    // Initialize components
-    BLEManager::setup();
-    MotorControl::setup();
-    PIDController::setup();
-    SensorManager::setup();
-
     // Create tasks
-    //xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0); // Tâche émission BLE sur Core 0 avec priorité 1
+    xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0); // Tâche émission BLE sur Core 0 avec priorité 1
 
     Serial.println("Setup complete - All tasks created");
 }
 
 void loop() {
-    SensorManager::update();
-    PIDController::update();
-    MotorControl::update();
+    sensorManager.update();
+    pidController.update();
+    motorControl.update();
     delay(PILOT_INTERVAL);
 }

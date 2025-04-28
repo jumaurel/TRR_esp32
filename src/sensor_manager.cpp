@@ -15,7 +15,7 @@ static float filteredRightDistance = 0.0;
 // Maximum allowed change between consecutive readings (in mm)
 static const float MAX_DISTANCE_CHANGE = 500.0;  // Increased to allow for faster movements
 
-void SensorManager::setup() {
+SensorManager::SensorManager() {
     pinMode(LEFT_SENSOR_PIN, INPUT);
     pinMode(RIGHT_SENSOR_PIN, INPUT);
     pinMode(LINE_SENSOR_PIN, INPUT);
@@ -25,20 +25,20 @@ void SensorManager::update() {
     // Read sensors with error handling
     float rawLeftDist = readDistance(LEFT_SENSOR_PIN, lastValidLeftDistance);
     float rawRightDist = readDistance(RIGHT_SENSOR_PIN, lastValidRightDistance);
-    
+
     // Apply constraints (0 to 1000mm)
     rawLeftDist = constrain(rawLeftDist, 0.0, 1000.0);
     rawRightDist = constrain(rawRightDist, 0.0, 1000.0);
-    
+
     // Read line sensor
     bool line = digitalRead(LINE_SENSOR_PIN);
-    
+
     // Update global state with filtered values
-    
+
     /*if(abs(rawLeftDist - lastValidLeftDistance) > 200){
         rawLeftDist = lastValidLeftDistance;
     }
-    
+
     if(abs(rawRightDist - lastValidRightDistance) > 200){
         rawRightDist = lastValidRightDistance;
     }*/
@@ -61,15 +61,15 @@ void SensorManager::update() {
 float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
     const uint16_t MAX_PULSE_WIDTH = 1850;
     const uint16_t MIN_PULSE_WIDTH = 1000;
-    
+
     int16_t t = pulseIn(pin, HIGH);
-        
+
     // Check if reading is valid
     if (t <= MAX_PULSE_WIDTH && t >= MIN_PULSE_WIDTH) {
         // Convert pulse width to distance using manufacturer's formula
         float d = (t - MIN_PULSE_WIDTH) * 2;
         // Ensure distance is not negative
-        return d > 0 ? d : 0.0;           
+        return d > 0 ? d : 0.0;
     }
     else if(t > MAX_PULSE_WIDTH){
         return 1000;
@@ -77,5 +77,5 @@ float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
     else{
         return lastValidDist;
     }
-  
+
 }

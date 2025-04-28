@@ -4,22 +4,40 @@
 #include <Arduino.h>
 
 // Static member initialization
-float PIDController::Kp = 0.1;
-float PIDController::Ki = 0.0;
-float PIDController::Kd = 0.0;
-float PIDController::targetDistance = 500; // 500mm from wall
-float PIDController::lastError = 0;
-float PIDController::integral = 0;
-int PIDController::servoCenter = 35; // Default center position of servo
-int PIDController::autoModeMotorSpeed = 0; // Default to 0% power
 
-void PIDController::setup() {
-    reset();
+// Constructor implementation
+PIDController::PIDController() : Kp(0.1), Ki(0.0), Kd(0.08), integral(0), lastError(0), autoModeMotorSpeed(0) {
+    // Initialization logic for PID constants and instance variables
 }
 
 void PIDController::reset() {
     lastError = 0;
     integral = 0;
+}
+
+// Getter methods implementation
+float PIDController::getKp() const {
+    return Kp;
+}
+
+float PIDController::getKi() const {
+    return Ki;
+}
+
+float PIDController::getKd() const {
+    return Kd;
+}
+
+float PIDController::getIntegral() const {
+    return integral;
+}
+
+float PIDController::getLastError() const {
+    return lastError;
+}
+
+int PIDController::getAutoModeMotorSpeed() const {
+    return autoModeMotorSpeed;
 }
 
 // Setter methods implementation
@@ -35,12 +53,20 @@ void PIDController::setKd(float value) {
     Kd = value;
 }
 
+void PIDController::setIntegral(float value) {
+    integral = value;
+}
+
+void PIDController::setLastError(float value) {
+    lastError = value;
+}
+
 void PIDController::setAutoModeMotorSpeed(int value) {
     autoModeMotorSpeed = value;
 }
 
 void PIDController::update() {
-    if (!globalState.isAutoMode){
+    if (!globalState.isAutoMode) {
         delay(10);
         return;
     }
@@ -53,13 +79,7 @@ void PIDController::update() {
     float derivative = (error - lastError) / (PILOT_INTERVAL / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
 
-    //Serial.println(error);
-    /*Serial.print(output);
-    Serial.print(" - ");
-    Serial.println(constrain(servoCenter + output, 20, 52));
-    */
     // Apply base speed to both motors
-
     globalState.motor1Speed = autoModeMotorSpeed;
     globalState.motor2Speed = autoModeMotorSpeed;
 
