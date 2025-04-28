@@ -21,6 +21,7 @@ PIDController pidController;
 // Global data structures
 SensorData sensorData;
 MotorData motorData;
+PIDData pidData;
 
 // Tasks
 void bleTask(void* parameter) {
@@ -58,7 +59,7 @@ void setup() {
 
 void loop() {
     sensorManager.update();
-    pidController.update();
+    pidController.update(pidData);
     motorControl.update();
     delay(PILOT_INTERVAL);
 }

@@ -15,6 +15,7 @@ bool BLEManager::deviceConnected = false;
 extern PIDController pidController;
 extern SensorData sensorData;
 extern MotorData motorData;
+extern PIDData pidData;
 
 
 // Server callbacks implementation
@@ -198,7 +199,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
         sensorData.isAutoMode = (data[1] == '1');
         if (sensorData.isAutoMode) {
           // Reset PID variables
-          pidController.reset();
+          pidController.reset(pidData);
           Serial.println("Mode Auto enabled");
         } else {
           // Reset motor speeds when switching to manual mode
@@ -259,7 +260,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           int motorSpeed = map(value, 0, 100, 0, 255);
 
           // Set auto mode motor speed in PID controller
-          pidController.setAutoModeMotorSpeed(motorSpeed);
+          sensorData.autoModeMotorSpeed = motorSpeed;
           Serial.print("Power percentage: ");
           Serial.print(value);
           Serial.print("%, Auto mode motor speed: ");
@@ -289,7 +290,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          pidController.setKp(value);
+          pidData.P = value;
           Serial.print("Kp set to: ");
           Serial.println(value);
         }
@@ -317,7 +318,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          pidController.setKi(value);
+          pidData.I = value;
           Serial.print("Ki set to: ");
           Serial.println(value);
         }
@@ -345,7 +346,7 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           }
 
           value += decimal;
-          pidController.setKd(value);
+          pidData.D = value;
           Serial.print("Kd set to: ");
           Serial.println(value);
         }
