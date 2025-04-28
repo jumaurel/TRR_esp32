@@ -108,14 +108,15 @@ void BLEManager::setup() {
 void BLEManager::sendSensorData() {
     if (!deviceConnected) return;
 
-    uint8_t sensorData[5];
-    sensorData[0] = globalState.leftDistance & 0xFF;
-    sensorData[1] = (globalState.leftDistance >> 8) & 0xFF;
-    sensorData[2] = globalState.rightDistance & 0xFF;
-    sensorData[3] = (globalState.rightDistance >> 8) & 0xFF;
-    sensorData[4] = globalState.lineDetected ? 1 : 0;
+    uint8_t sensorData[6];
+    sensorData[0] = 'D';
+    sensorData[1] = globalState.leftDistance & 0xFF;
+    sensorData[2] = (globalState.leftDistance >> 8) & 0xFF;
+    sensorData[3] = globalState.rightDistance & 0xFF;
+    sensorData[4] = (globalState.rightDistance >> 8) & 0xFF;
+    sensorData[5] = globalState.lineDetected ? 1 : 0;
 
-    pSensorCharacteristic->setValue(sensorData, 5);
+    pSensorCharacteristic->setValue(sensorData, 6);
     pSensorCharacteristic->notify();
 }
 
