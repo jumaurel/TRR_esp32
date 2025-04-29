@@ -14,6 +14,8 @@
 #define MOTOR2_ENB  13   // Motor 2 enable pin (PWM)
 
 #define SERVO_PIN   16   // Servo control pin
+#define LINE_COLOR_READ_PIN 23 // detecteur de ligne de couleur
+#define LINE_COLOR_SELECT_PIN 22
 
 // Bluetooth UUIDs
 #define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
