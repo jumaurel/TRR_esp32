@@ -9,3 +9,5 @@ extern TaskHandle_t bleTaskHandle;
 extern TaskHandle_t sensorTaskHandle;
 extern TaskHandle_t controlTaskHandle;
 extern TaskHandle_t pidTaskHandle;
+
+void checkSwitch();

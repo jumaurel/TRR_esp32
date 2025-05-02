@@ -27,3 +27,6 @@
 #define MOTOR_PWM_RES      8       // 8-bit resolution (0-255)
 #define PILOT_INTERVAL     20
 #define BLE_NOTIFY_INTERVAL 100    // BLE notification interval in ms
+
+#define SWITCH_BUTTON 17
+#define STARTUP_DELAY 3000  // 3 second delay after switch button is pressed

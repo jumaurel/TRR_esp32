@@ -75,6 +75,7 @@ void MotorControl::update() {
         steeringServo.write(constrain(globalState.servoAngle, 20, 52));
        
     } else {
+        steeringServo.write(35); // mise en position centrale des roues
         // Emergency stop
         digitalWrite(MOTOR1_IN1, LOW);
         digitalWrite(MOTOR1_IN2, LOW);

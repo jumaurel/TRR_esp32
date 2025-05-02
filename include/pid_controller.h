@@ -5,7 +5,7 @@
 class PIDController {
 public:
     static void setup();
-    static void update();
+    static void update(unsigned long sensorDuration);
     static void reset();
     
     // Add setter methods for PID parameters

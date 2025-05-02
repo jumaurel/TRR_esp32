@@ -4,9 +4,9 @@
 #include <Arduino.h>
 
 // Static member initialization
-float PIDController::Kp = 0.1;
+float PIDController::Kp = 0.08;
 float PIDController::Ki = 0.0;
-float PIDController::Kd = 0.0;
+float PIDController::Kd = 0.04;
 float PIDController::targetDistance = 500; // 500mm from wall
 float PIDController::lastError = 0;
 float PIDController::integral = 0;
@@ -39,20 +39,20 @@ void PIDController::setAutoModeMotorSpeed(int value) {
     autoModeMotorSpeed = value;
 }
 
-void PIDController::update() {
-    if (!globalState.isAutoMode){
+void PIDController::update(unsigned long sensorDuration) {
+    /*if (!globalState.isAutoMode){ // si mode manuel, on ne fait pas le calcul du PID
         delay(10);
         return;
-    }
+    }*/
 
     // Calculate error (average of left and right distances)
     float error = globalState.leftDistance - globalState.rightDistance;
 
     // PID calculation
-    integral += error * (PILOT_INTERVAL / 1000.0);
-    float derivative = (error - lastError) / (PILOT_INTERVAL / 1000.0);
+    integral += error * (sensorDuration / 1000.0);
+    float derivative = (error - lastError) / (sensorDuration / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
-
+    
     //Serial.println(error);
     /*Serial.print(output);
     Serial.print(" - ");

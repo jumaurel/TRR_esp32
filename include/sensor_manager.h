@@ -3,6 +3,8 @@
 #include <Arduino.h>
 #include "config.h"
 
+
+
 class SensorManager {
 public:
     static void setup();
@@ -11,6 +13,8 @@ public:
 
 private:
     static int16_t calculateAverage(int16_t* readings, uint8_t numReadings);
-    static float readLineColor();
+    static int readLineColor();
+    static void checkTrackColor();
+    static void trackCounter();
 
 };
