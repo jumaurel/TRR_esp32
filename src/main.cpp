@@ -14,9 +14,7 @@
 // Global variables
 bool switchActivated = false;
 unsigned long switchActivationTime = 0;
-unsigned long functionDuration = 0;
-unsigned long sensorMeasurementStart = 0;
-unsigned long sensorMeasurementDuration = 0;
+
 
 // Task handles
 TaskHandle_t bleTaskHandle;
@@ -39,6 +37,7 @@ void bleTask(void* parameter) {
 
 void setup() {
     Serial.begin(115200);
+
 
     // Initialize global state
     globalState.trackCount = 0;
@@ -69,16 +68,19 @@ void loop() {
     // Check switch before starting the car
     //checkSwitch();
 
+    //START SIGNAL DETECTOR
+    //Serial.println(analogRead(RED_SPOT_PIN));
+
+
     // Start the car if the switch is activated
     //if (switchActivated) {
-        sensorMeasurementStart = millis();
-        SensorManager::update(); //? measured function duration : between 9700 and 20500us
-        sensorMeasurementDuration = millis() - sensorMeasurementStart;
-        PIDController::update(sensorMeasurementDuration); //? measured function duration : ~10000us (between 9700 and 10500us)     
-        MotorControl::update(); //? measured function duration : 18us
+       SensorManager::update(); //? measured function duration : between 9700 and 20500us
+       PIDController::update(); //? measured function duration : ~10000us (between 9700 and 10500us)     
+       MotorControl::update(); //? measured function duration : 18us
+        
     //} 
 
-    if(globalState.trackCount == 2){
+    if(globalState.trackCount == 4){
         globalState.emergency = true;
         globalState.trackCount = 0;
     }

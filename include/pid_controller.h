@@ -5,7 +5,7 @@
 class PIDController {
 public:
     static void setup();
-    static void update(unsigned long sensorDuration);
+    static void update();
     static void reset();
     
     // Add setter methods for PID parameters
@@ -23,4 +23,6 @@ private:
     static float integral;
     static int autoModeMotorSpeed;
     static int servoCenter; // Center position of servo in degrees
+    static unsigned long loopDurationStart;
+    static unsigned long loopDuration;
 }; 

@@ -2,10 +2,12 @@
 #include "config.h"
 #include "state.h"
 #include <Arduino.h>
+#include <HardwareSerial.h>
 
 // Static variables to store last valid distances and error counts
 static float lastValidLeftDistance = 0.0;
 static float lastValidRightDistance = 0.0;
+static float lastValidFrontDistance = 0.0;
 
 // Circular buffer for track colors
 static const int COLOR_BUFFER_SIZE = 5;
@@ -21,7 +23,7 @@ static int lastColor = 0;
 void SensorManager::setup() {
     pinMode(LEFT_SENSOR_PIN, INPUT);
     pinMode(RIGHT_SENSOR_PIN, INPUT);
-    pinMode(LINE_SENSOR_PIN, INPUT);
+    pinMode(FRONT_SENSOR_PIN, INPUT);
     pinMode(LINE_COLOR_READ_PIN, INPUT);
     pinMode(LINE_COLOR_SELECT_PIN, OUTPUT);
     digitalWrite(LINE_COLOR_SELECT_PIN, LOW);
@@ -30,30 +32,32 @@ void SensorManager::setup() {
     for(int i = 0; i < COLOR_BUFFER_SIZE; i++) {
         colorBuffer[i] = 0;
     }
+
 }
 
 void SensorManager::update() {
     // Read sensors with error handling
     float rawLeftDist = readDistance(LEFT_SENSOR_PIN, lastValidLeftDistance); //!measured duration between 3000us and 10000us : conform with theoritical duration (100Hz update rate)
     float rawRightDist = readDistance(RIGHT_SENSOR_PIN, lastValidRightDistance); //!measured duration between 3000us and 10000us : conform with theoritical duration (100Hz update rate)
+    //float rawFrontDist = readDistance(FRONT_SENSOR_PIN, lastValidFrontDistance); //!measured duration between 3000us and 10000us : conform with theoritical duration (100Hz update rate)
     
     // Apply constraints (0 to 1000mm)
     rawLeftDist = constrain(rawLeftDist, 0.0, 1000.0);
     rawRightDist = constrain(rawRightDist, 0.0, 1000.0);
+    //rawFrontDist = constrain(rawFrontDist, 0.0, 1000.0);
 
     // Color check function and track counter
     checkTrackColor();
     trackCounter();
 
-     // Update last valid distances
+    // Update last valid distances
     lastValidLeftDistance = rawLeftDist;
     lastValidRightDistance = rawRightDist;
+    //lastValidFrontDistance = rawFrontDist;
 
     globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
     globalState.rightDistance = static_cast<int16_t>(rawRightDist);
-    /*Serial.print(globalState.leftDistance);
-    Serial.print(" - ");
-    Serial.println(globalState.rightDistance);*/
+ 
 }
 
 float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
@@ -98,6 +102,7 @@ void SensorManager::checkTrackColor() {
     // Update global state only if all colors are the same
     if(allSameColor) {
         globalState.trackColor = firstColor;
+        //Serial.println(globalState.trackColor);
     }
 }
 
@@ -162,10 +167,12 @@ void SensorManager::trackCounter() {
     
     // Detect finish line (red) after start line
     if (hasPassedStartLine && currentColor != 3 && lastColor == 3) {
-         globalState.trackCount++;
+        globalState.trackCount++;
         hasPassedStartLine = false;
         Serial.println("Finish line passed");
     }
     
     lastColor = currentColor;
 }
+
+

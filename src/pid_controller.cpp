@@ -12,6 +12,8 @@ float PIDController::lastError = 0;
 float PIDController::integral = 0;
 int PIDController::servoCenter = 35; // Default center position of servo
 int PIDController::autoModeMotorSpeed = 0; // Default to 0% power
+unsigned long PIDController::loopDurationStart = 0;
+unsigned long PIDController::loopDuration = 0;
 
 void PIDController::setup() {
     reset();
@@ -39,7 +41,8 @@ void PIDController::setAutoModeMotorSpeed(int value) {
     autoModeMotorSpeed = value;
 }
 
-void PIDController::update(unsigned long sensorDuration) {
+void PIDController::update() {
+    loopDuration = millis() - loopDurationStart;
     /*if (!globalState.isAutoMode){ // si mode manuel, on ne fait pas le calcul du PID
         delay(10);
         return;
@@ -49,8 +52,8 @@ void PIDController::update(unsigned long sensorDuration) {
     float error = globalState.leftDistance - globalState.rightDistance;
 
     // PID calculation
-    integral += error * (sensorDuration / 1000.0);
-    float derivative = (error - lastError) / (sensorDuration / 1000.0);
+    integral += error * (loopDuration / 1000.0);
+    float derivative = (error - lastError) / (loopDuration / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
     
     //Serial.println(error);
@@ -68,4 +71,6 @@ void PIDController::update(unsigned long sensorDuration) {
     globalState.servoAngle = servoAngle;
 
     lastError = error;
+
+    loopDurationStart = millis();
 }
