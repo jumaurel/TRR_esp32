@@ -4,7 +4,7 @@
 #include <Arduino.h>
 
 // Static member initialization
-float PIDController::Kp = 0.025;
+float PIDController::Kp = 0.021;
 float PIDController::Ki = 0.0;
 float PIDController::Kd = 0.004;
 float PIDController::targetDistance = 500; // 500mm from wall

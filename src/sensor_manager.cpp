@@ -114,8 +114,7 @@ int SensorManager::readLineColor() {
     digitalWrite(LINE_COLOR_SELECT_PIN, HIGH);
     int blue = pulseIn(LINE_COLOR_READ_PIN, HIGH);
 
-    //Serial.print(red);
-    //Serial.print("-"); Serial.println(blue);
+    
 
     // examples of readings:
     //
@@ -148,14 +147,16 @@ int SensorManager::readLineColor() {
     else if (red < 25 && blue < 25) {
         color = 2;
     }
-    else if (red < blue - 15) {
+    else if (red < blue - 20) {
         color = 3;
     }
-    else if (blue < red - 40) {
+    else if (blue < red - 30) {
         color = 4;
     }
 
-    Serial.print("Color: "); Serial.println(color);
+/*Serial.print(red);
+    Serial.print("-"); Serial.print(blue);
+    Serial.print("-"); Serial.println(color);*/
     return color;
 }
 

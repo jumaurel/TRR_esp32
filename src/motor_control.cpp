@@ -56,7 +56,7 @@ void MotorControl::update() {
         float servoDeviation = abs(globalState.servoAngle - 35.0);
         // Facteur de réduction de 0 à 0.2 (20% max)
         // 17 degrés = 52-35 (angle max - centre)
-        float differentialFactor = (servoDeviation / 17.0) * 0.1;
+        float differentialFactor = (servoDeviation / 17.0) * 0.2;
         
         // Déterminer quel moteur est à l'intérieur du virage
         bool isLeftTurn = globalState.servoAngle < 35.0;

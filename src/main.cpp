@@ -14,6 +14,8 @@
 // Global variables
 bool switchActivated = false;
 unsigned long switchActivationTime = 0;
+unsigned long emergencyStartTime = 0;  // Timer pour l'état d'urgence
+bool emergencyTimerActive = false;     // Indique si le timer est actif
 
 // Variables for light detection
 const int LIGHT_SAMPLE_SIZE = 10;  // Taille de la moyenne glissante
@@ -68,6 +70,10 @@ void setup() {
     //xTaskCreatePinnedToCore(bleTask, "BLE", 4096, NULL, 1, &bleTaskHandle, 0); // Tâche émission BLE sur Core 0 avec priorité 1
 
     Serial.println("Setup complete - All tasks created");
+
+    // wait 5 seconds before starting the car
+    delay(5000);
+    globalState.emergency = false;
 }
 
 
@@ -80,6 +86,17 @@ void loop() {
         globalState.emergency = false;
     }*/
 
+    // Gestion du timer d'urgence
+    if (!globalState.emergency && !emergencyTimerActive) {
+        emergencyStartTime = millis();
+        emergencyTimerActive = true;
+    }
+    
+    if (emergencyTimerActive && (millis() - emergencyStartTime >= 75000)) {  // 1mn20 = 80000ms
+        globalState.emergency = true;
+        emergencyTimerActive = false;
+    }
+
     // Start the car if the switch is activated
     //if (switchActivated) {
         SensorManager::update(); //? measured function duration : between 9700 and 20500us
@@ -88,10 +105,11 @@ void loop() {
          
     //} 
 
-    if(globalState.trackCount == 6){
+    // Stop the car if the track count is 6 => this has been removed because it was causing the car to stop prematurely when line detection was not working => stop is now handled by the emergency timer after 1mn20
+    /*if(globalState.trackCount == 6){
         globalState.emergency = true;
         globalState.trackCount = 0;
-    }
+    }*/
 
     // Going faster during straight line
     if(globalState.hasPassedStartLine == true){
