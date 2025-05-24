@@ -253,7 +253,8 @@ void BLEManager::processControlCommand(uint8_t* data, size_t length) {
           int motorSpeed = map(value, 0, 100, 0, 255);
 
           // Set auto mode motor speed in PID controller
-          PIDController::setAutoModeMotorSpeed(motorSpeed);
+          globalState.motor1Speed = motorSpeed;
+          globalState.motor2Speed = motorSpeed;
           Serial.print("Power percentage: ");
           Serial.print(value);
           Serial.print("%, Auto mode motor speed: ");

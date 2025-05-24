@@ -10,14 +10,12 @@ static float lastValidRightDistance = 0.0;
 static float lastValidFrontDistance = 0.0;
 
 // Circular buffer for track colors
-static const int COLOR_BUFFER_SIZE = 5;
+static const int COLOR_BUFFER_SIZE = 3;
 static int colorBuffer[COLOR_BUFFER_SIZE];
 static int colorBufferIndex = 0;
 static bool bufferInitialized = false;
 
 // Static variables for track counting
-static bool hasPassedStartLine = false;
-static bool hasPassedFinishLine = false;
 static int lastColor = 0;
 
 void SensorManager::setup() {
@@ -57,7 +55,9 @@ void SensorManager::update() {
 
     globalState.leftDistance = static_cast<int16_t>(rawLeftDist);
     globalState.rightDistance = static_cast<int16_t>(rawRightDist);
- 
+
+    
+
 }
 
 float SensorManager::readDistance(uint8_t pin, float& lastValidDist) {
@@ -114,6 +114,9 @@ int SensorManager::readLineColor() {
     digitalWrite(LINE_COLOR_SELECT_PIN, HIGH);
     int blue = pulseIn(LINE_COLOR_READ_PIN, HIGH);
 
+    //Serial.print(red);
+    //Serial.print("-"); Serial.println(blue);
+
     // examples of readings:
     //
     // Ground color | red | blue
@@ -148,28 +151,33 @@ int SensorManager::readLineColor() {
     else if (red < blue - 15) {
         color = 3;
     }
-    else if (blue < red - 15) {
+    else if (blue < red - 40) {
         color = 4;
     }
 
+    Serial.print("Color: "); Serial.println(color);
     return color;
 }
+
+
 
 void SensorManager::trackCounter() {
     // Track is counted when we detect: blue line -> other -> red line -> other
     int currentColor = globalState.trackColor;
-    //Serial.println(currentColor);
+    
     // Detect start line (blue)
     if (currentColor != 4 && lastColor == 4) {
-        hasPassedStartLine = true;
-        Serial.println("Start line passed ");
+        globalState.hasPassedStartLine = true;
+        globalState.changeSpeed = true;
+        //Serial.println("Start line passed ");
     }
     
     // Detect finish line (red) after start line
-    if (hasPassedStartLine && currentColor != 3 && lastColor == 3) {
+    if (globalState.hasPassedStartLine && currentColor != 3 && lastColor == 3) {
         globalState.trackCount++;
-        hasPassedStartLine = false;
-        Serial.println("Finish line passed");
+        globalState.hasPassedStartLine = false;
+        globalState.changeSpeed = true;
+        //Serial.println("Finish line passed");
     }
     
     lastColor = currentColor;

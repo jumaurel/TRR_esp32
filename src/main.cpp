@@ -15,6 +15,12 @@
 bool switchActivated = false;
 unsigned long switchActivationTime = 0;
 
+// Variables for light detection
+const int LIGHT_SAMPLE_SIZE = 10;  // Taille de la moyenne glissante
+int lightSamples[LIGHT_SAMPLE_SIZE];  // Tableau pour stocker les échantillons
+int lightSampleIndex = 0;  // Index actuel dans le tableau
+int lightAverage = 0;  // Moyenne actuelle
+bool isLightDetectionActive = false;  // État de la détection de lumière
 
 // Task handles
 TaskHandle_t bleTaskHandle;
@@ -64,31 +70,45 @@ void setup() {
     Serial.println("Setup complete - All tasks created");
 }
 
+
 void loop() {
-    // Check switch before starting the car
-    //checkSwitch();
-
+    //checkLightDetection();  // Seule fonction de contrôle de démarrage
+    
     //START SIGNAL DETECTOR
-    //Serial.println(analogRead(RED_SPOT_PIN));
-
+    /*Serial.println(analogRead(RED_SPOT_PIN));
+    if(analogRead(RED_SPOT_PIN) < 3000){
+        globalState.emergency = false;
+    }*/
 
     // Start the car if the switch is activated
     //if (switchActivated) {
-       SensorManager::update(); //? measured function duration : between 9700 and 20500us
-       PIDController::update(); //? measured function duration : ~10000us (between 9700 and 10500us)     
-       MotorControl::update(); //? measured function duration : 18us
-        
+        SensorManager::update(); //? measured function duration : between 9700 and 20500us
+        PIDController::update(); //? measured function duration : ~10000us (between 9700 and 10500us)     
+        MotorControl::update(); //? measured function duration : 18us
+         
     //} 
 
-    if(globalState.trackCount == 4){
+    if(globalState.trackCount == 6){
         globalState.emergency = true;
         globalState.trackCount = 0;
     }
+
+    // Going faster during straight line
+    if(globalState.hasPassedStartLine == true){
+        globalState.motor1Speed = 50 * 255 / 100;
+        globalState.motor2Speed = 50 * 255 / 100;
+     }
+    else{
+        globalState.motor1Speed = 40 * 255 / 100;
+        globalState.motor2Speed = 40 * 255 / 100;
+    }
+
     //delay(PILOT_INTERVAL);
 }
 
+
 void checkSwitch() {
- // Check if switch is HIGH, then wait for 3 seconds before activating the car
+    // Check if switch is HIGH, then wait for 3 seconds before activating the car
     if (digitalRead(SWITCH_BUTTON) == HIGH && 
         (millis() - switchActivationTime >= STARTUP_DELAY)) {
         switchActivated = true;
@@ -101,5 +121,44 @@ void checkSwitch() {
         digitalWrite(MOTOR1_IN2, LOW);
         digitalWrite(MOTOR2_IN3, LOW);
         digitalWrite(MOTOR2_IN4, LOW);
+    }
+}
+
+void checkLightDetection() {
+    if (!digitalRead(SWITCH_BUTTON)) {
+        // Réinitialiser si l'interrupteur est désactivé
+        isLightDetectionActive = false;
+        lightSampleIndex = 0;
+        lightAverage = 0;
+        return;
+    }
+
+    // Activer la détection si l'interrupteur est activé
+    if (!isLightDetectionActive) {
+        isLightDetectionActive = true;
+        // Initialiser le tableau avec la première valeur
+        int initialValue = analogRead(RED_SPOT_PIN);
+        for (int i = 0; i < LIGHT_SAMPLE_SIZE; i++) {
+            lightSamples[i] = initialValue;
+        }
+        lightAverage = initialValue;
+        return;
+    }
+
+    // Lire la nouvelle valeur
+    int currentLight = analogRead(RED_SPOT_PIN);
+    
+    // Mettre à jour la moyenne glissante
+    lightAverage = lightAverage - (lightSamples[lightSampleIndex] / LIGHT_SAMPLE_SIZE);
+    lightSamples[lightSampleIndex] = currentLight;
+    lightAverage = lightAverage + (currentLight / LIGHT_SAMPLE_SIZE);
+    
+    // Mettre à jour l'index
+    lightSampleIndex = (lightSampleIndex + 1) % LIGHT_SAMPLE_SIZE;
+
+    // Vérifier si le changement est significatif
+    if (abs(currentLight - lightAverage) > 100) {
+        globalState.emergency = false;
+        isLightDetectionActive = false;
     }
 }

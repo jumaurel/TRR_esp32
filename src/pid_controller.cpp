@@ -4,14 +4,13 @@
 #include <Arduino.h>
 
 // Static member initialization
-float PIDController::Kp = 0.08;
+float PIDController::Kp = 0.025;
 float PIDController::Ki = 0.0;
-float PIDController::Kd = 0.04;
+float PIDController::Kd = 0.004;
 float PIDController::targetDistance = 500; // 500mm from wall
 float PIDController::lastError = 0;
 float PIDController::integral = 0;
 int PIDController::servoCenter = 35; // Default center position of servo
-int PIDController::autoModeMotorSpeed = 0; // Default to 0% power
 unsigned long PIDController::loopDurationStart = 0;
 unsigned long PIDController::loopDuration = 0;
 
@@ -37,10 +36,6 @@ void PIDController::setKd(float value) {
     Kd = value;
 }
 
-void PIDController::setAutoModeMotorSpeed(int value) {
-    autoModeMotorSpeed = value;
-}
-
 void PIDController::update() {
     loopDuration = millis() - loopDurationStart;
     /*if (!globalState.isAutoMode){ // si mode manuel, on ne fait pas le calcul du PID
@@ -55,16 +50,6 @@ void PIDController::update() {
     integral += error * (loopDuration / 1000.0);
     float derivative = (error - lastError) / (loopDuration / 1000.0);
     float output = Kp * error + Ki * integral + Kd * derivative;
-    
-    //Serial.println(error);
-    /*Serial.print(output);
-    Serial.print(" - ");
-    Serial.println(constrain(servoCenter + output, 20, 52));
-    */
-    // Apply base speed to both motors
-
-    globalState.motor1Speed = autoModeMotorSpeed;
-    globalState.motor2Speed = autoModeMotorSpeed;
 
     // Convert PID output to servo angle (0-180 degrees)
     int servoAngle = constrain(servoCenter + output, 20, 52);

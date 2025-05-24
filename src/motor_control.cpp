@@ -51,19 +51,41 @@ void MotorControl::setupPWM() {
 
 void MotorControl::update() {
     if (!globalState.emergency) {
+        // Calcul du facteur de différentiel basé sur l'angle du servo
+        // L'angle 35 est le centre, on calcule l'écart par rapport au centre
+        float servoDeviation = abs(globalState.servoAngle - 35.0);
+        // Facteur de réduction de 0 à 0.2 (20% max)
+        // 17 degrés = 52-35 (angle max - centre)
+        float differentialFactor = (servoDeviation / 17.0) * 0.1;
+        
+        // Déterminer quel moteur est à l'intérieur du virage
+        bool isLeftTurn = globalState.servoAngle < 35.0;
+        
+        // Appliquer le facteur de différentiel au moteur intérieur
+        float motor1Speed = globalState.motor1Speed;
+        float motor2Speed = globalState.motor2Speed;   
+        
+        if (isLeftTurn) {
+            // Virage à gauche : moteur 1 (gauche) est à l'intérieur
+            motor1Speed *= (1.0 - differentialFactor);
+        } else {
+            // Virage à droite : moteur 2 (droite) est à l'intérieur
+            motor2Speed *= (1.0 - differentialFactor);
+        }
+        
         // Contrôle des directions des moteurs via les pins IN1/IN2 et IN3/IN4
         // Motor 1 control
-        digitalWrite(MOTOR1_IN1, (globalState.motor1Speed >= 0) == globalState.isForward ? HIGH : LOW);
-        digitalWrite(MOTOR1_IN2, (globalState.motor1Speed >= 0) == globalState.isForward ? LOW : HIGH);
+        digitalWrite(MOTOR1_IN1, (motor1Speed >= 0) == globalState.isForward ? HIGH : LOW);
+        digitalWrite(MOTOR1_IN2, (motor1Speed >= 0) == globalState.isForward ? LOW : HIGH);
         
         // Motor 2 control
-        digitalWrite(MOTOR2_IN3, (globalState.motor2Speed >= 0) == globalState.isForward ? HIGH : LOW);
-        digitalWrite(MOTOR2_IN4, (globalState.motor2Speed >= 0) == globalState.isForward ? LOW : HIGH);
+        digitalWrite(MOTOR2_IN3, (motor2Speed >= 0) == globalState.isForward ? HIGH : LOW);
+        digitalWrite(MOTOR2_IN4, (motor2Speed >= 0) == globalState.isForward ? LOW : HIGH);
         
         // Contrôle PWM des moteurs avec MCPWM
         // Conversion de 0-255 à 0-100%
-        float duty1 = abs(globalState.motor1Speed) / 255.0 * 100.0;
-        float duty2 = abs(globalState.motor2Speed) / 255.0 * 100.0;
+        float duty1 = abs(motor1Speed) / 255.0 * 100.0;
+        float duty2 = abs(motor2Speed) / 255.0 * 100.0;
         
         // Application du PWM aux moteurs
         mcpwm_set_duty(MCPWM_UNIT, MOTOR1_TIMER, MCPWM_GEN_A, duty1);

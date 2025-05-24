@@ -6,6 +6,8 @@
 struct GlobalState {
     volatile int16_t leftDistance;
     volatile int16_t rightDistance;
+    volatile bool changeSpeed;
+    volatile bool hasPassedStartLine = false;
     volatile bool lineDetected;
     volatile bool isAutoMode;
     volatile int motor1Speed;

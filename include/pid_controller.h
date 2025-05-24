@@ -12,7 +12,6 @@ public:
     static void setKp(float value);
     static void setKi(float value);
     static void setKd(float value);
-    static void setAutoModeMotorSpeed(int value);
     
 private:
     static float Kp;
